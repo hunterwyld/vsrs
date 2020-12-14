@@ -59,10 +59,6 @@ public class Stream {
         return metaData;
     }
 
-    public LinkedList<Channel> getPlayers() {
-        return players;
-    }
-
     public synchronized void onRecvVideo(VideoMessage msg) {
         if (msg.isAVCDecoderConfigurationRecord()) {
             logger.info("<-- recv avcDecoderConfigurationRecord, stream=" + streamId);

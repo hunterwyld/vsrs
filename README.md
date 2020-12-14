@@ -1,6 +1,6 @@
 ## VSRS
 
-VSRS(Very Simple Rtmp Server) is a rtmp server demo written in java.
+VSRS(Very Simple Rtmp Server) is a rtmp server written in java.
 
 ### Start server
 ```
