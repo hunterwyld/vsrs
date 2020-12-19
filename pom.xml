@@ -30,7 +30,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.wanghao.vsrs.RtmpServer</mainClass>
+                            <mainClass>com.wanghao.vsrs.server.RtmpServer</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
