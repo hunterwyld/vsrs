@@ -2,6 +2,7 @@ package com.wanghao.vsrs.server.manage;
 
 import com.wanghao.vsrs.common.rtmp.message.AudioMessage;
 import com.wanghao.vsrs.common.rtmp.message.RtmpMessage;
+import com.wanghao.vsrs.common.rtmp.message.TextMessage;
 import com.wanghao.vsrs.common.rtmp.message.VideoMessage;
 import io.netty.channel.Channel;
 import org.apache.log4j.Logger;
@@ -75,6 +76,10 @@ public class Stream {
 
     public synchronized void onRecvAudio(AudioMessage msg) {
         mediaData.add(msg);
+        broadcastToPlayers(msg);
+    }
+
+    public void onRecvText(TextMessage msg) {
         broadcastToPlayers(msg);
     }
 

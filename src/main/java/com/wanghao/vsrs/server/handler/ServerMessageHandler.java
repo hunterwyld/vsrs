@@ -1,5 +1,6 @@
-package com.wanghao.vsrs.server;
+package com.wanghao.vsrs.server.handler;
 
+import com.wanghao.vsrs.common.handler.MessageHandler;
 import com.wanghao.vsrs.server.manage.Stream;
 import com.wanghao.vsrs.server.manage.StreamId;
 import com.wanghao.vsrs.server.manage.StreamManager;
@@ -18,11 +19,12 @@ import static com.wanghao.vsrs.common.util.Constant.APP_NAME;
 /**
  * @author wanghao
  */
-public class MessageHandler {
-    private static final Logger logger = Logger.getLogger(MessageHandler.class);
+public class ServerMessageHandler implements MessageHandler {
+    private static final Logger logger = Logger.getLogger(ServerMessageHandler.class);
 
     private Stream stream;
 
+    @Override
     public void handleVideo(VideoMessage msg) {
         if (stream == null) {
             return;
@@ -30,6 +32,7 @@ public class MessageHandler {
         stream.onRecvVideo(msg);
     }
 
+    @Override
     public void handleAudio(AudioMessage msg) {
         if (stream == null) {
             return;
@@ -37,6 +40,15 @@ public class MessageHandler {
         stream.onRecvAudio(msg);
     }
 
+    @Override
+    public void handleText(TextMessage msg) {
+        if (stream == null) {
+            return;
+        }
+        stream.onRecvText(msg);
+    }
+
+    @Override
     public void handleAMF0Data(ChannelHandlerContext ctx, AMF0DataMessage data) {
         if (data == null) {
             return;
@@ -50,6 +62,7 @@ public class MessageHandler {
         }
     }
 
+    @Override
     public void handleAMF0Command(ChannelHandlerContext ctx, AMF0CommandMessage command) {
         if (command == null) {
             return;
@@ -161,7 +174,7 @@ public class MessageHandler {
         AMF0DataMessage dataMessage = new AMF0DataMessage(command.getCsid(), onMetaData);
         ctx.channel().writeAndFlush(dataMessage);
 
-        // start play
+        // start playing
         logger.info(streamId + " is playing");
         stream.addPlayer(ctx.channel());
     }

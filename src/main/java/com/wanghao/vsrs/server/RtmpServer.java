@@ -1,8 +1,8 @@
 package com.wanghao.vsrs.server;
 
-import com.wanghao.vsrs.server.handler.ChunkDecoder;
-import com.wanghao.vsrs.server.handler.ChunkEncoder;
-import com.wanghao.vsrs.server.handler.HandshakeHandler;
+import com.wanghao.vsrs.common.handler.netty.ChunkDecoder;
+import com.wanghao.vsrs.common.handler.netty.ChunkEncoder;
+import com.wanghao.vsrs.server.handler.netty.HandshakeHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
@@ -31,7 +31,7 @@ public class RtmpServer {
 
     public static void main(String[] args) throws InterruptedException {
         if(args != null && args.length > 1) {
-            if(args[0].equalsIgnoreCase("-p") || args[0].equalsIgnoreCase("-port")) {
+            if("-p".equalsIgnoreCase(args[0]) || "-port".equalsIgnoreCase(args[0])) {
                 port = Integer.parseInt(args[1]);
             }
         }
@@ -56,7 +56,7 @@ public class RtmpServer {
                         protected void initChannel(SocketChannel sc) throws Exception {
                             sc.pipeline()
                             .addLast(new HandshakeHandler())
-                            .addLast(new ChunkDecoder())
+                            .addLast(new ChunkDecoder(true))
                             .addLast(new ChunkEncoder())
                             ;
                         }

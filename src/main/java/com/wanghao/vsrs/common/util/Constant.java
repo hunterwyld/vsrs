@@ -30,6 +30,8 @@ public class Constant {
     public static final byte RTMP_MSG_AudioMessage                  = 0x08;
     // Video Message
     public static final byte RTMP_MSG_VideoMessage                  = 0x09;
+    // Text Message(self defined, not rtmp standard)
+    public static final byte SELFDEFINE_MSG_TextMessage             = 0x0A;
 
     // Command Message
     public static final byte RTMP_MSG_AMF3CommandMessage            = 0x11;//17
@@ -59,6 +61,7 @@ public class Constant {
 
     public static final int DEFAULT_VIDEO_OUT_CSID = 12;
     public static final int DEFAULT_AUDIO_OUT_CSID = 10;
+    public static final int DEFAULT_TEXT_OUT_CSID = 14;
 
     public static final String APP_NAME = "live";
 

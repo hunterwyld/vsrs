@@ -1,15 +1,22 @@
 package com.wanghao.vsrs.client;
 
-import com.wanghao.vsrs.client.handler.HandshakeHandler;
+import com.wanghao.vsrs.client.handler.netty.HandshakeHandler;
+import com.wanghao.vsrs.common.handler.netty.ChunkDecoder;
+import com.wanghao.vsrs.common.handler.netty.ChunkEncoder;
 import com.wanghao.vsrs.common.util.Utils;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.apache.log4j.Logger;
+
+import java.net.InetSocketAddress;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.wanghao.vsrs.client.conf.Properties.*;
+import static com.wanghao.vsrs.common.util.Constant.APP_NAME;
 
 /**
  * @author wanghao
@@ -25,17 +32,15 @@ public class RtmpClient {
     // 客户端已尝试重连次数
     private static int RECONNECT = 0;
 
-    private static String serverHost;
-    private static int serverPort;
-
     private static EventLoopGroup group;
     private static Bootstrap bootstrap;
 
-    public static void main(String[] args) {
-
-        String serverUrl = "rtmp://127.0.0.1/live/test";
-        serverHost = "127.0.0.1";
-        serverPort = 1935;
+    public static void main(String[] args) throws Exception {
+        String url = "rtmp://127.0.0.1:1935/live/test";
+        boolean success = parseUrl(url);
+        if (!success) {
+            throw new Exception("invalid rtmp url: " + url);
+        }
 
         // 创建工作线程池
         group = new NioEventLoopGroup();
@@ -43,11 +48,22 @@ public class RtmpClient {
         bootstrap = new Bootstrap()
                 .group(group)
                 .channel(NioSocketChannel.class)
+                .localAddress(new InetSocketAddress(port))
                 .remoteAddress(serverHost, serverPort)
                 // 开启TCP no delay，允许较小数据包的发送
                 .option(ChannelOption.TCP_NODELAY, true)
-                .handler(new HandshakeHandler());
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        ch.pipeline()
+                                .addLast(new HandshakeHandler())
+                                .addLast(new ChunkDecoder(false))
+                                .addLast(new ChunkEncoder())
+                                ;
+                    }
+                });
 
+        logger.info("Rtmp client started on port " + port);
         connect();
     }
 
@@ -80,5 +96,31 @@ public class RtmpClient {
 
         RECONNECT++;
         connect();
+    }
+
+    private static boolean parseUrl(String url) {
+        if (url == null) {
+            return false;
+        }
+        final String regex = "^rtmp://(.+)/live/(.+)$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.find()) {
+            String ipPort = matcher.group(1);
+            String[] ipPortSplit = ipPort.split(":");
+            if (ipPortSplit.length == 1) {
+                serverHost = ipPortSplit[0];
+                serverPort = 1935;
+            } else if (ipPortSplit.length == 2) {
+                serverHost = ipPortSplit[0];
+                serverPort = Integer.parseInt(ipPortSplit[1]);
+            } else {
+                return false;
+            }
+            appName = APP_NAME;
+            streamName = matcher.group(2);
+            return true;
+        }
+        return false;
     }
 }

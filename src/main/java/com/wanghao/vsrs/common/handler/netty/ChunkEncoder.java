@@ -1,4 +1,4 @@
-package com.wanghao.vsrs.server.handler;
+package com.wanghao.vsrs.common.handler.netty;
 
 import com.wanghao.vsrs.common.rtmp.message.*;
 import com.wanghao.vsrs.common.rtmp.message.binary.AMF0;
@@ -21,8 +21,10 @@ public class ChunkEncoder extends MessageToByteEncoder<RtmpMessage> {
 
     private boolean firstVideo = true;
     private boolean firstAudio = true;
+    private boolean firstText = true;
     private long firstVideoTimestamp = System.currentTimeMillis();
     private long firstAudioTimestamp = System.currentTimeMillis();
+    private long firstTextTimestamp = System.currentTimeMillis();
 
     @Override
     protected void encode(ChannelHandlerContext ctx, RtmpMessage msg, ByteBuf out) throws Exception {
@@ -101,6 +103,14 @@ public class ChunkEncoder extends MessageToByteEncoder<RtmpMessage> {
             } else {
                 encodeWithFmt1And3(msg, out);
             }
+        } else if (msg instanceof TextMessage) {
+            if (firstText) {
+                firstTextTimestamp = System.currentTimeMillis();
+                encodeWithFmt0And3(msg, out);
+                firstText = false;
+            } else {
+                encodeWithFmt1And3(msg, out);
+            }
         }
     }
 
@@ -124,6 +134,12 @@ public class ChunkEncoder extends MessageToByteEncoder<RtmpMessage> {
             payload.writeByte(((VideoMessage) msg).getControl());
             payload.writeBytes(((VideoMessage) msg).getVideoData());
             firstMediaTimestamp = firstVideoTimestamp;
+        } else if (msg instanceof TextMessage) {
+            outCsid = DEFAULT_TEXT_OUT_CSID;
+            payloadLength = ((TextMessage) msg).getTextData().length;
+            payload = Unpooled.buffer(payloadLength, payloadLength);
+            payload.writeBytes(((TextMessage) msg).getTextData());
+            firstMediaTimestamp = firstTextTimestamp;
         } else {
             return;
         }
@@ -183,6 +199,12 @@ public class ChunkEncoder extends MessageToByteEncoder<RtmpMessage> {
             payload.writeByte(((VideoMessage) msg).getControl());
             payload.writeBytes(((VideoMessage) msg).getVideoData());
             timestampDelta = ((VideoMessage) msg).getTimestampDelta();
+        } else if (msg instanceof TextMessage) {
+            outCsid = DEFAULT_TEXT_OUT_CSID;
+            payloadLength = ((TextMessage) msg).getTextData().length;
+            payload = Unpooled.buffer(payloadLength, payloadLength);
+            payload.writeBytes(((TextMessage) msg).getTextData());
+            timestampDelta = ((TextMessage) msg).getTimestampDelta();
         } else {
             return;
         }

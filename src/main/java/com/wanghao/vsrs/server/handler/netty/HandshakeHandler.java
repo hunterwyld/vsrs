@@ -1,4 +1,4 @@
-package com.wanghao.vsrs.server.handler;
+package com.wanghao.vsrs.server.handler.netty;
 
 import com.wanghao.vsrs.common.rtmp.HandshakeBytes;
 import io.netty.buffer.ByteBuf;
