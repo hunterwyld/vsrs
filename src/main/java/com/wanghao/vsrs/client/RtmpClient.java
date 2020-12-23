@@ -36,7 +36,22 @@ public class RtmpClient {
     private static Bootstrap bootstrap;
 
     public static void main(String[] args) throws Exception {
-        String url = "rtmp://127.0.0.1:1935/live/test";
+        if (args.length != 2 && args.length != 3) {
+            throw new Exception("invalid number of args");
+        }
+        String url;
+        if ("-play".equals(args[0])) {
+            isPlayer = true;
+            publishFilePath = null;
+            url = args[1];
+        } else if ("-publish".equals(args[0])) {
+            isPlayer = false;
+            publishFilePath = args[1];
+            url = args[2];
+        } else {
+            throw new Exception("invalid args[0]");
+        }
+
         boolean success = parseUrl(url);
         if (!success) {
             throw new Exception("invalid rtmp url: " + url);

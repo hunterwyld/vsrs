@@ -1,5 +1,7 @@
 package com.wanghao.vsrs.client.handler;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.wanghao.vsrs.common.handler.MessageHandler;
 import com.wanghao.vsrs.common.rtmp.message.*;
 import com.wanghao.vsrs.common.rtmp.message.binary.AMF0;
@@ -7,9 +9,11 @@ import com.wanghao.vsrs.common.rtmp.message.binary.AMF0Object;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.log4j.Logger;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static com.wanghao.vsrs.client.conf.Properties.isPlayer;
+import static com.wanghao.vsrs.client.conf.Properties.*;
 
 /**
  * @author wanghao
@@ -18,7 +22,6 @@ public class ClientMessageHandler implements MessageHandler {
     private static final Logger logger = Logger.getLogger(ClientMessageHandler.class);
 
     private boolean readyToPlay = false;
-    private boolean readyToPublish = false;
 
     @Override
     public void handleVideo(VideoMessage msg) {
@@ -32,10 +35,9 @@ public class ClientMessageHandler implements MessageHandler {
 
     @Override
     public void handleText(TextMessage msg) {
-        if (!readyToPlay) {
-            return;
+        if (isPlayer && readyToPlay) {
+            logger.info("<-- " + new String(msg.getTextData()));
         }
-        logger.info(new String(msg.getTextData()));
     }
 
     @Override
@@ -88,9 +90,81 @@ public class ClientMessageHandler implements MessageHandler {
                 break;
             }
             if (!isPlayer && "NetStream.Publish.Start".equals(((AMF0Object) obj).get("code"))) {
-                readyToPublish = true;
+                startPublishText(ctx);
                 break;
             }
         }
+    }
+
+    private void startPublishText(ChannelHandlerContext ctx) {
+        String textToPublish = readPublishFile();
+        if (textToPublish == null) {
+            logger.error("read file error: " + publishFilePath);
+            return;
+        }
+        //String text = "[{\"time\":1608711651000,\"data\":{\"user\":\"我是丁真\",\"text\":\"我要去喂我的小马了\"}},{\"time\":1608711652000,\"data\":{\"user\":\"马保国\",\"text\":\"年轻人不讲武德\"}},{\"time\":1608711654000,\"data\":{\"user\":\"cxk\",\"text\":\"吃我一记连五鞭\"}},{\"time\":1608711654500,\"data\":{\"user\":\"我是丁真\",\"text\":\"cxk是我大哥\"}},{\"time\":1608711654800,\"data\":{\"user\":\"马保国\",\"text\":\"就骗！就偷袭！\"}},{\"time\":1608711655500,\"data\":{\"user\":\"cxk\",\"text\":\"心疼保国老师...\"}},{\"time\":1608711655600,\"data\":{\"user\":\"我是丁真\",\"text\":\"传统功夫讲究点到为止\"}},{\"time\":1608711655900,\"data\":{\"user\":\"马保国\",\"text\":\"噫！大意了，没有闪\"}},{\"time\":1608711656000,\"data\":{\"user\":\"cxk\",\"text\":\"我劝你们年轻人耗子尾汁\"}},{\"time\":1608711656050,\"data\":{\"user\":\"马保国\",\"text\":\"浑元形意太极门掌门人\"}}]";
+        final Object[] objects = JSON.parseArray(textToPublish).toArray();
+        logger.info("Ready to send " + objects.length + " messages");
+        int curIdx = 0;
+        long beginTime = System.currentTimeMillis();
+        long gapTime = Long.MIN_VALUE;
+        while (curIdx < objects.length) {
+            Object curObj = objects[curIdx];
+            Long curTime = ((JSONObject)curObj).getLong("time");
+            if (curIdx == 0) {
+                gapTime = System.currentTimeMillis() - curTime;
+            } else {
+                long now = System.currentTimeMillis();
+                while (now < gapTime + curTime) {
+                    //wait
+                    now = System.currentTimeMillis();
+                }
+            }
+            JSONObject data = ((JSONObject) curObj).getJSONObject("data");
+            String message = data.getString("user") + ": " + data.getString("text");
+            logger.info("--> " + message);
+            byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+            TextMessage tm = new TextMessage(System.currentTimeMillis()-beginTime, 0, bytes);
+            curIdx++;
+            ctx.channel().writeAndFlush(tm);
+        }
+    }
+
+    private String readPublishFile() {
+        if (publishFilePath == null) {
+            logger.error("no publish file specified");
+            return null;
+        }
+
+        InputStream in;
+        try {
+            in = new FileInputStream(publishFilePath);
+        } catch (FileNotFoundException e) {
+            logger.error("publish file not found", e);
+            return null;
+        }
+
+        BufferedReader reader = null;
+        try {
+            StringBuilder sb = new StringBuilder();
+            reader = new BufferedReader(new InputStreamReader(in));
+            String line = reader.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = reader.readLine();
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
     }
 }

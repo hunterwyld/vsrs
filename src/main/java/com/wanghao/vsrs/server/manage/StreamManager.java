@@ -35,7 +35,7 @@ public class StreamManager {
         return streamMap.get(streamId);
     }
 
-    public static void deleteStream(StreamId streamId) {
+    private static void deleteStream(StreamId streamId) {
         streamMap.remove(streamId);
     }
 

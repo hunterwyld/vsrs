@@ -5,16 +5,15 @@ import com.wanghao.vsrs.common.err.ProtocolException;
 import com.wanghao.vsrs.common.handler.MessageHandler;
 import com.wanghao.vsrs.common.rtmp.Chunk;
 import com.wanghao.vsrs.common.rtmp.ChunkMessageHeader;
-import com.wanghao.vsrs.server.handler.ServerMessageHandler;
 import com.wanghao.vsrs.common.rtmp.message.*;
 import com.wanghao.vsrs.common.rtmp.message.binary.AMF0;
+import com.wanghao.vsrs.server.handler.ServerMessageHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
 import org.apache.log4j.Logger;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,12 +36,9 @@ public class ChunkDecoder extends ReplayingDecoder<ChunkDecoder.DecodeState> {
     private final Map<Integer, Chunk> csid2ChunkMap = new HashMap<>();
 
     private final MessageHandler messageHandler;
-    private final boolean isServer;
-    private final boolean willMockText = false;
 
     public ChunkDecoder(boolean isServer) {
         super();
-        this.isServer = isServer;
         if (isServer) {
             messageHandler = new ServerMessageHandler();
         } else {
@@ -180,25 +176,16 @@ public class ChunkDecoder extends ReplayingDecoder<ChunkDecoder.DecodeState> {
                 } else {
                     byte[] bytes = new byte[payload.readableBytes()];
                     payload.readBytes(bytes);
-                    if (willMockText && isServer) {
-                        String mockStr = "Kratos is Atreus' father!";
-                        retMsg = new TextMessage(header.getTimestamp(), header.getTimestampDelta(), mockStr.getBytes(StandardCharsets.UTF_8));
-                        messageHandler.handleText((TextMessage) retMsg);
-                    } else {
-                        retMsg = new VideoMessage(header.getTimestamp(), header.getTimestampDelta(), control, bytes);
-                        messageHandler.handleVideo((VideoMessage) retMsg);
-                    }
+                    retMsg = new VideoMessage(header.getTimestamp(), header.getTimestampDelta(), control, bytes);
+                    messageHandler.handleVideo((VideoMessage) retMsg);
                 }
             }
             break;
             case SELFDEFINE_MSG_TextMessage: {
-                //for client only
-                if (!isServer) {
-                    byte[] bytes = new byte[payload.readableBytes()];
-                    payload.readBytes(bytes);
-                    retMsg = new TextMessage(header.getTimestamp(), header.getTimestampDelta(), bytes);
-                    messageHandler.handleText((TextMessage) retMsg);
-                }
+                byte[] bytes = new byte[payload.readableBytes()];
+                payload.readBytes(bytes);
+                retMsg = new TextMessage(header.getTimestamp(), header.getTimestampDelta(), bytes);
+                messageHandler.handleText((TextMessage) retMsg);
             }
             break;
             default:

@@ -45,6 +45,7 @@ public class ServerMessageHandler implements MessageHandler {
         if (stream == null) {
             return;
         }
+        logger.info("--> " + new String(msg.getTextData()));
         stream.onRecvText(msg);
     }
 

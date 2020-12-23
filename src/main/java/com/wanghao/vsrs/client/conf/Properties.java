@@ -13,6 +13,9 @@ public class Properties {
     public static String streamName;
 
     // client is player or publisher
-    public static boolean isPlayer = true;
+    public static boolean isPlayer;
+
+    // text file path
+    public static String publishFilePath;
 
 }
