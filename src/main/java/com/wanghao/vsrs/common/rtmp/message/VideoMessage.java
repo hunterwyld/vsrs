@@ -41,7 +41,7 @@ public class VideoMessage extends RtmpMessage {
         return control == VIDEO_CONTROL_KEYFRAME;
     }
 
-    public boolean isAVCDecoderConfigurationRecord() {
+    public boolean isAVCSequenceHeader() {
         return isH264KeyFrame() && videoData.length > 1 && videoData[0] == 0x00;
     }
 }

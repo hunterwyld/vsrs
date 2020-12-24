@@ -13,7 +13,9 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static com.wanghao.vsrs.client.conf.Properties.*;
+import static com.wanghao.vsrs.client.conf.Properties.isPlayer;
+import static com.wanghao.vsrs.client.conf.Properties.publishFilePath;
+import static com.wanghao.vsrs.common.util.Constant.VIDEO_CONTROL_KEYFRAME;
 
 /**
  * @author wanghao
@@ -25,7 +27,10 @@ public class ClientMessageHandler implements MessageHandler {
 
     @Override
     public void handleVideo(VideoMessage msg) {
-
+        if (isPlayer && readyToPlay) {
+            byte[] videoData = msg.getVideoData();
+            logger.info("<-- " + new String(videoData, 1, videoData.length-1));
+        }
     }
 
     @Override
@@ -124,9 +129,13 @@ public class ClientMessageHandler implements MessageHandler {
             String message = data.getString("user") + ": " + data.getString("text");
             logger.info("--> " + message);
             byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
-            TextMessage tm = new TextMessage(System.currentTimeMillis()-beginTime, 0, bytes);
+            byte[] videoData = new byte[1+bytes.length];
+            videoData[0] = 0x01;
+            System.arraycopy(bytes, 0, videoData, 1, bytes.length);
+            VideoMessage msg = new VideoMessage(System.currentTimeMillis()-beginTime, 0, VIDEO_CONTROL_KEYFRAME, videoData);
+            //TextMessage msg = new TextMessage(System.currentTimeMillis()-beginTime, 0, bytes);
             curIdx++;
-            ctx.channel().writeAndFlush(tm);
+            ctx.channel().writeAndFlush(msg);
         }
     }
 

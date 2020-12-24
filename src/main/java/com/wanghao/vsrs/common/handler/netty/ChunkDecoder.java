@@ -156,6 +156,9 @@ public class ChunkDecoder extends ReplayingDecoder<ChunkDecoder.DecodeState> {
                 //TODO
                 break;
             case RTMP_MSG_UserControlMessage:
+                short eventType = payload.readShort();
+                int eventData = payload.readInt();
+                retMsg = new UserControlMessage(eventType, eventData);
                 break;
             case RTMP_MSG_AudioMessage: {
                 int control = payload.readUnsignedByte();

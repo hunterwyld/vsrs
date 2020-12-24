@@ -36,7 +36,6 @@ public class AMF0 {
     private static final byte BOOLEAN_FALSE = 0x00;
 
     private static final byte[] END_OF_OBJECT = new byte[] {0x00, 0x00, 0x09};
-    private static final byte[] END_OF_OBJECT_FFMPEG = new byte[] {0x65, 0x00, 0x00};
 
     public static int getType(Object obj) {
         if (obj == null) {
@@ -100,7 +99,7 @@ public class AMF0 {
                 final byte[] endOfObject = new byte[3];
                 while (in.isReadable()) {
                     in.getBytes(in.readerIndex(), endOfObject);
-                    if (Arrays.equals(endOfObject, END_OF_OBJECT) || Arrays.equals(endOfObject, END_OF_OBJECT_FFMPEG)) {
+                    if (Arrays.equals(endOfObject, END_OF_OBJECT)) {
                         in.skipBytes(3);
                         break;
                     }
@@ -114,7 +113,7 @@ public class AMF0 {
                 final byte[] endOfObject = new byte[3];
                 while (in.isReadable()) {
                     in.getBytes(in.readerIndex(), endOfObject);
-                    if (Arrays.equals(endOfObject, END_OF_OBJECT) || Arrays.equals(endOfObject, END_OF_OBJECT_FFMPEG)) {
+                    if (Arrays.equals(endOfObject, END_OF_OBJECT)) {
                         in.skipBytes(3);
                         break;
                     }

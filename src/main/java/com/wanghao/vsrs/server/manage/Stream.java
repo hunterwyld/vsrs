@@ -25,10 +25,10 @@ public class Stream {
 
     private Map<String, Object> metaData;
 
-    // FLV 文件中第一个 VIDEOTAG 的 VIDEODATA 的 AVCVIDEOPACKET 的 Data
-    // 总是 AVCDecoderConfigurationRecord（在 ISO/IEC 14496-15 中定义），
-    // 解码的时候注意跳过这个 VIDOETAG。
-    private VideoMessage avcDecoderConfigurationRecord;
+    // AVCDecoderConfigurationRecord defined in ISO-14496-15 AVC file format
+    private VideoMessage avcSequenceHeader;
+    // AudioSpecificConfig defined in ISO-14496-3 Audio
+    private AudioMessage aacSequenceHeader;
 
 
     public Stream(StreamId streamId, Channel publisher) {
@@ -42,9 +42,12 @@ public class Stream {
         if (player != null && player.isActive()) {
             players.add(player);
 
-            // write avcDecoderConfigurationRecord first
-            if (avcDecoderConfigurationRecord != null) {
-                player.writeAndFlush(avcDecoderConfigurationRecord);
+            // write AVC/AAC Sequence Header first
+            if (avcSequenceHeader != null) {
+                player.writeAndFlush(avcSequenceHeader);
+            }
+            if (aacSequenceHeader != null) {
+                player.writeAndFlush(aacSequenceHeader);
             }
             for (RtmpMessage msg : mediaData) {
                 player.writeAndFlush(msg);
@@ -61,9 +64,9 @@ public class Stream {
     }
 
     public synchronized void onRecvVideo(VideoMessage msg) {
-        if (msg.isAVCDecoderConfigurationRecord()) {
-            logger.info("<-- recv avcDecoderConfigurationRecord, stream=" + streamId);
-            avcDecoderConfigurationRecord = msg;
+        if (msg.isAVCSequenceHeader()) {
+            logger.info("<-- recv AVC Sequence Header, stream=" + streamId);
+            avcSequenceHeader = msg;
         }
         if (msg.isH264KeyFrame()) {
             logger.info("<-- recv key frame, stream=" + streamId);
@@ -75,6 +78,11 @@ public class Stream {
     }
 
     public synchronized void onRecvAudio(AudioMessage msg) {
+        if (msg.isAACSequenceHeader()) {
+            logger.info("<-- recv AAC Sequence Header, stream=" + streamId);
+            aacSequenceHeader = msg;
+        }
+
         mediaData.add(msg);
         broadcastToPlayers(msg);
     }

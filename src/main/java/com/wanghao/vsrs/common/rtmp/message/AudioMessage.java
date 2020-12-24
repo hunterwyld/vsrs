@@ -34,4 +34,8 @@ public class AudioMessage extends RtmpMessage {
     public byte[] getAudioData() {
         return audioData;
     }
+
+    public boolean isAACSequenceHeader() {
+        return audioData.length > 1 && audioData[0] == 0x00;
+    }
 }

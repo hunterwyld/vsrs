@@ -64,6 +64,8 @@ public class HandshakeHandler extends ByteToMessageDecoder {
         connect.add(1);
         AMF0Object amf0Object = new AMF0Object();
         amf0Object.put("app", appName);
+        amf0Object.put("type", "nonprivate");
+        amf0Object.put("tcUrl", "rtmp://" + serverHost + ":" + serverPort + "/" + appName);
         connect.add(amf0Object);
         AMF0CommandMessage connectCommand = new AMF0CommandMessage(outCsid, connect);
         ctx.channel().writeAndFlush(connectCommand);
@@ -100,7 +102,6 @@ public class HandshakeHandler extends ByteToMessageDecoder {
             ctx.channel().writeAndFlush(releaseStreamCommand);
 
             // send FCPublish
-            // send createStream()
             logger.info("--> send FCPublish");
             List<Object> FCPublish = new ArrayList<>();
             FCPublish.add("FCPublish");
@@ -114,10 +115,19 @@ public class HandshakeHandler extends ByteToMessageDecoder {
             logger.info("--> send createStream()");
             List<Object> createStream = new ArrayList<>();
             createStream.add("createStream");
-            createStream.add(2);
+            createStream.add(4);
             createStream.add(null);
             AMF0CommandMessage createStreamCommand = new AMF0CommandMessage(outCsid, createStream);
             ctx.channel().writeAndFlush(createStreamCommand);
+
+            // send _checkbw()
+            logger.info("--> send _checkbw()");
+            List<Object> checkbw = new ArrayList<>();
+            checkbw.add("_checkbw");
+            checkbw.add(5);
+            checkbw.add(null);
+            AMF0CommandMessage checkbwCommand = new AMF0CommandMessage(outCsid, checkbw);
+            ctx.channel().writeAndFlush(checkbwCommand);
 
             // send publish
             logger.info("--> send publish");
