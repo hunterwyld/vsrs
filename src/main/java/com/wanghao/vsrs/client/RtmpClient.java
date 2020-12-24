@@ -3,7 +3,6 @@ package com.wanghao.vsrs.client;
 import com.wanghao.vsrs.client.handler.netty.HandshakeHandler;
 import com.wanghao.vsrs.common.handler.netty.ChunkDecoder;
 import com.wanghao.vsrs.common.handler.netty.ChunkEncoder;
-import com.wanghao.vsrs.common.util.Utils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -11,7 +10,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.apache.log4j.Logger;
 
-import java.net.InetSocketAddress;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,8 +23,6 @@ import static com.wanghao.vsrs.common.util.Constant.APP_NAME;
 public class RtmpClient {
     private static final Logger logger = Logger.getLogger(RtmpClient.class);
 
-    private static final int port = Utils.getRandomPortWithin(50000, 50100);
-
     // 客户端最大重连次数
     private static final int MAX_RECONNECT = 3;
     // 客户端已尝试重连次数
@@ -37,9 +33,9 @@ public class RtmpClient {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 2 && args.length != 3) {
-            throw new Exception("invalid number of args");
+            printUsage(new Exception("invalid number of args"));
         }
-        String url;
+        String url = null;
         if ("-play".equals(args[0])) {
             isPlayer = true;
             publishFilePath = null;
@@ -49,7 +45,7 @@ public class RtmpClient {
             publishFilePath = args[1];
             url = args[2];
         } else {
-            throw new Exception("invalid args[0]");
+            printUsage(new Exception("invalid args[0]"));
         }
 
         boolean success = parseUrl(url);
@@ -63,7 +59,6 @@ public class RtmpClient {
         bootstrap = new Bootstrap()
                 .group(group)
                 .channel(NioSocketChannel.class)
-                .localAddress(new InetSocketAddress(port))
                 .remoteAddress(serverHost, serverPort)
                 // 开启TCP no delay，允许较小数据包的发送
                 .option(ChannelOption.TCP_NODELAY, true)
@@ -78,7 +73,6 @@ public class RtmpClient {
                     }
                 });
 
-        logger.info("Rtmp client started on port " + port);
         connect();
     }
 
@@ -137,5 +131,13 @@ public class RtmpClient {
             return true;
         }
         return false;
+    }
+
+    private static void printUsage(Exception e) throws Exception {
+        System.out.println("--------------- USAGE ---------------");
+        System.out.println("Publish: java -jar rtmpclient.jar -publish text.json rtmp://127.0.0.1/live/test");
+        System.out.println("Play: java -jar rtmpclient.jar -play rtmp://127.0.0.1/live/test");
+        System.out.println("-------------------------------------");
+        throw e;
     }
 }

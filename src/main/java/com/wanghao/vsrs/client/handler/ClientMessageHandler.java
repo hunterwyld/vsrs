@@ -102,9 +102,9 @@ public class ClientMessageHandler implements MessageHandler {
             logger.error("read file error: " + publishFilePath);
             return;
         }
-        //String text = "[{\"time\":1608711651000,\"data\":{\"user\":\"我是丁真\",\"text\":\"我要去喂我的小马了\"}},{\"time\":1608711652000,\"data\":{\"user\":\"马保国\",\"text\":\"年轻人不讲武德\"}},{\"time\":1608711654000,\"data\":{\"user\":\"cxk\",\"text\":\"吃我一记连五鞭\"}},{\"time\":1608711654500,\"data\":{\"user\":\"我是丁真\",\"text\":\"cxk是我大哥\"}},{\"time\":1608711654800,\"data\":{\"user\":\"马保国\",\"text\":\"就骗！就偷袭！\"}},{\"time\":1608711655500,\"data\":{\"user\":\"cxk\",\"text\":\"心疼保国老师...\"}},{\"time\":1608711655600,\"data\":{\"user\":\"我是丁真\",\"text\":\"传统功夫讲究点到为止\"}},{\"time\":1608711655900,\"data\":{\"user\":\"马保国\",\"text\":\"噫！大意了，没有闪\"}},{\"time\":1608711656000,\"data\":{\"user\":\"cxk\",\"text\":\"我劝你们年轻人耗子尾汁\"}},{\"time\":1608711656050,\"data\":{\"user\":\"马保国\",\"text\":\"浑元形意太极门掌门人\"}}]";
+        //String textToPublish = "[{\"time\":1608711651000,\"data\":{\"user\":\"我是丁真\",\"text\":\"我要去喂我的小马了\"}},{\"time\":1608711652000,\"data\":{\"user\":\"马保国\",\"text\":\"年轻人不讲武德\"}},{\"time\":1608711654000,\"data\":{\"user\":\"cxk\",\"text\":\"吃我一记连五鞭\"}},{\"time\":1608711654500,\"data\":{\"user\":\"我是丁真\",\"text\":\"cxk是我大哥\"}},{\"time\":1608711654800,\"data\":{\"user\":\"马保国\",\"text\":\"就骗！就偷袭！\"}},{\"time\":1608711655500,\"data\":{\"user\":\"cxk\",\"text\":\"心疼保国老师...\"}},{\"time\":1608711655600,\"data\":{\"user\":\"我是丁真\",\"text\":\"传统功夫讲究点到为止\"}},{\"time\":1608711655900,\"data\":{\"user\":\"马保国\",\"text\":\"噫！大意了，没有闪\"}},{\"time\":1608711656000,\"data\":{\"user\":\"cxk\",\"text\":\"我劝你们年轻人耗子尾汁\"}},{\"time\":1608711656050,\"data\":{\"user\":\"马保国\",\"text\":\"浑元形意太极门掌门人\"}}]";
         final Object[] objects = JSON.parseArray(textToPublish).toArray();
-        logger.info("Ready to send " + objects.length + " messages");
+        logger.info("Ready to publish " + objects.length + " messages");
         int curIdx = 0;
         long beginTime = System.currentTimeMillis();
         long gapTime = Long.MIN_VALUE;
