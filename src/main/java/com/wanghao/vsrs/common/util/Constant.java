@@ -31,7 +31,7 @@ public class Constant {
     // Video Message
     public static final byte RTMP_MSG_VideoMessage                  = 0x09;
     // Text Message(self defined, not rtmp standard)
-    public static final byte SELFDEFINE_MSG_TextMessage             = 0x0A;
+    public static final byte SELFDEFINED_MSG_TextMessage             = 0x0A;
 
     // Command Message
     public static final byte RTMP_MSG_AMF3CommandMessage            = 0x11;//17

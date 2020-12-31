@@ -184,7 +184,7 @@ public class ChunkDecoder extends ReplayingDecoder<ChunkDecoder.DecodeState> {
                 }
             }
             break;
-            case SELFDEFINE_MSG_TextMessage: {
+            case SELFDEFINED_MSG_TextMessage: {
                 byte[] bytes = new byte[payload.readableBytes()];
                 payload.readBytes(bytes);
                 retMsg = new TextMessage(header.getTimestamp(), header.getTimestampDelta(), bytes);

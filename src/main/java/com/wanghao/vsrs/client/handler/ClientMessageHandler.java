@@ -15,6 +15,7 @@ import java.util.List;
 
 import static com.wanghao.vsrs.client.conf.Properties.isPlayer;
 import static com.wanghao.vsrs.client.conf.Properties.publishFilePath;
+import static com.wanghao.vsrs.common.util.Constant.AUDIO_CONTROL;
 import static com.wanghao.vsrs.common.util.Constant.VIDEO_CONTROL_KEYFRAME;
 
 /**
@@ -35,7 +36,10 @@ public class ClientMessageHandler implements MessageHandler {
 
     @Override
     public void handleAudio(AudioMessage msg) {
-
+        if (isPlayer && readyToPlay) {
+            byte[] audioData = msg.getAudioData();
+            logger.info("<-- " + new String(audioData, 1, audioData.length-1));
+        }
     }
 
     @Override
@@ -129,11 +133,22 @@ public class ClientMessageHandler implements MessageHandler {
             String message = data.getString("user") + ": " + data.getString("text");
             logger.info("--> " + message);
             byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+
+            // send as video message
             byte[] videoData = new byte[1+bytes.length];
-            videoData[0] = 0x01;
+            videoData[0] = 0x00; //mock an avc sequence header
             System.arraycopy(bytes, 0, videoData, 1, bytes.length);
             VideoMessage msg = new VideoMessage(System.currentTimeMillis()-beginTime, 0, VIDEO_CONTROL_KEYFRAME, videoData);
-            //TextMessage msg = new TextMessage(System.currentTimeMillis()-beginTime, 0, bytes);
+
+            // send as audio message
+//            byte[] audioData = new byte[1+bytes.length];
+//            audioData[0] = 0x00; //mock an aac sequence header
+//            System.arraycopy(bytes, 0, audioData, 1, bytes.length);
+//            AudioMessage msg = new AudioMessage(System.currentTimeMillis()-beginTime, 0, AUDIO_CONTROL, audioData);
+
+            // send as self-defined text message
+//            TextMessage msg = new TextMessage(System.currentTimeMillis()-beginTime, 0, bytes);
+
             curIdx++;
             ctx.channel().writeAndFlush(msg);
         }

@@ -136,12 +136,12 @@ public class ServerMessageHandler implements MessageHandler {
         }
 
         // send streamBegin
-        logger.info("--> send streamBegin");
+        logger.info("--> send streamBegin for play");
         UserControlMessage streamBegin = new UserControlMessage((short) 0, 0);
         ctx.channel().writeAndFlush(streamBegin);
 
         // send onStatus('NetStream.Play.Start')
-        logger.info("--> send onStatus('NetStream.Play.Start')");
+        logger.info("--> send onStatus('NetStream.Play.Start') for play");
         List<Object> onStatus = new ArrayList<>();
         onStatus.add("onStatus");
         onStatus.add(0);
@@ -155,7 +155,7 @@ public class ServerMessageHandler implements MessageHandler {
         ctx.channel().writeAndFlush(onStatusCommand);
 
         // send |RtmpSampleAccess()
-        logger.info("--> send |RtmpSampleAccess()");
+        logger.info("--> send |RtmpSampleAccess() for play");
         List<Object> sampleAccess = new ArrayList<>();
         sampleAccess.add("|RtmpSampleAccess");
         sampleAccess.add(true);
@@ -164,7 +164,7 @@ public class ServerMessageHandler implements MessageHandler {
         ctx.channel().writeAndFlush(sampleAccessDataMessage);
 
         // send onMetaData()
-        logger.info("--> send onMetaData()");
+        logger.info("--> send onMetaData() for play");
         List<Object> onMetaData = new ArrayList<>();
         onMetaData.add("onMetaData");
         AMF0Object amf0Object1 = new AMF0Object();
@@ -219,7 +219,7 @@ public class ServerMessageHandler implements MessageHandler {
         ctx.channel().writeAndFlush(onFCPublishCommand);
 
         // send onStatus('NetStream.Publish.Start')
-        logger.info("--> send onStatus('NetStream.Publish.Start')");
+        logger.info("--> send onStatus('NetStream.Publish.Start') for publish");
         List<Object> onStatus = new ArrayList<>();
         onStatus.add("onStatus");
         onStatus.add(0);

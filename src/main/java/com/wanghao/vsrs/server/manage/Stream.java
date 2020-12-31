@@ -21,7 +21,7 @@ public class Stream {
     private Channel publisher;
     private LinkedList<Channel> players;
 
-    private LinkedList<RtmpMessage> mediaData;
+    private LinkedList<RtmpMessage> gopCache;
 
     private Map<String, Object> metaData;
 
@@ -35,7 +35,7 @@ public class Stream {
         this.streamId = streamId;
         this.publisher = publisher;
         this.players = new LinkedList<>();
-        this.mediaData = new LinkedList<>();
+        this.gopCache = new LinkedList<>();
     }
 
     public synchronized void addPlayer(Channel player) {
@@ -49,7 +49,8 @@ public class Stream {
             if (aacSequenceHeader != null) {
                 player.writeAndFlush(aacSequenceHeader);
             }
-            for (RtmpMessage msg : mediaData) {
+            // write gop cache then
+            for (RtmpMessage msg : gopCache) {
                 player.writeAndFlush(msg);
             }
         }
@@ -70,10 +71,10 @@ public class Stream {
         }
         if (msg.isH264KeyFrame()) {
             logger.info("<-- recv key frame, stream=" + streamId);
-            mediaData.clear();
+            gopCache.clear();
         }
 
-        mediaData.add(msg);
+        gopCache.add(msg);
         broadcastToPlayers(msg);
     }
 
@@ -83,7 +84,7 @@ public class Stream {
             aacSequenceHeader = msg;
         }
 
-        mediaData.add(msg);
+        gopCache.add(msg);
         broadcastToPlayers(msg);
     }
 
